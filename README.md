@@ -40,6 +40,8 @@ output.
   - Respects `cwd` restrictions.
   - Validates model names against an allowlist (if configured).
   - Graceful handling of process timeouts and errors.
+- **Performance**:
+  - Estimated token consumption for MCP server operations: approximately 300 tokens.
 
 ## Configuration
 
