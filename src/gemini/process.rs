@@ -339,12 +339,14 @@ mod tests {
         assert_eq!(result.response, "hello world");
         assert_eq!(result.session_id.as_deref(), Some("session-1"));
         assert_eq!(result.model.as_deref(), Some("gemini-test"));
-        assert!(result
-            .stats
-            .as_ref()
-            .expect("stats should be present")
-            .models
-            .is_empty());
+        assert!(
+            result
+                .stats
+                .as_ref()
+                .expect("stats should be present")
+                .models
+                .is_empty()
+        );
         assert_eq!(result.events.as_ref().map(Vec::len), Some(4));
 
         let args = fs::read_to_string(args_path).expect("args should be captured");
