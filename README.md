@@ -167,14 +167,12 @@ assistant response, plus optional metadata and events.
 
 **Arguments**:
 
-| Field | Type | Required | Description |
-|-------|--------|-----------|-------------|
-| `prompt` | string | Yes | The prompt to send to `gemini -p`. |
-| `cwd` | string or null | No | Working directory for the subprocess (relative paths resolved against the server's working dir). |
-| `timeout_secs` | integer (uint64) or null | No | Timeout override for this specific invocation (must be <= configured max). |
-| `model` | string or null | No | Optional `--model` override. Must be in the `GEMINI_ALLOWED_MODELS` allowlist if configured. |
-| `include_events` | boolean | No | If true, includes the parsed `stream-json` events in the `events` field. |
-| `include_stderr` | boolean | No | If true, includes stderr output even on success. |
+- `prompt` (string, required): The prompt to send to `gemini -p`
+- `cwd` (string or null, optional): Working directory for the subprocess (relative paths resolved against the server's working dir)
+- `timeout_secs` (integer or null, optional): Timeout override for this specific invocation (must be <= configured max)
+- `model` (string or null, optional): Optional `--model` override. Must be in the `GEMINI_ALLOWED_MODELS` allowlist if configured
+- `include_events` (boolean, optional): If true, includes the parsed `stream-json` events in the `events` field
+- `include_stderr` (boolean, optional): If true, includes stderr output even on success
 
 **Returns** (Success):
 
