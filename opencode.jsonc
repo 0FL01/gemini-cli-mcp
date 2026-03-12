@@ -3,11 +3,17 @@
   "mcp": {
     "gemini-mcp": {
       "type": "local",
+      // Run the gemini-mcp-server binary with configuration environment variables
       "command": [
         "sh", "-c",
         "GEMINI_BIN=gemini GEMINI_DEFAULT_TIMEOUT_SECS=600 GEMINI_MAX_TIMEOUT_SECS=1800 ./target/release/gemini-mcp-server"
       ],
-      "enabled": true
+      "enabled": true,
+      // Optional: restrict access to specific models or directories
+      // "env": {
+      //   "GEMINI_ALLOWED_MODELS": "gemini-2.5-flash,gemini-2.5-pro",
+      //   "GEMINI_ALLOWED_CWD_PREFIXES": "/home/user/projects:/home/user/code"
+      // }
     }
   }
 }

@@ -1,7 +1,7 @@
 # Project Context for AI Agents
 
 This document provides context for AI agents working on the `gemini-mcp-server`
-codebase (located in `experimental/gemini-mcp-server/`).
+codebase (standalone Rust project).
 
 ## Purpose
 
@@ -9,6 +9,8 @@ This project is a standalone Rust crate that implements a
 [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server. It acts
 as a bridge between external MCP clients (agents, IDEs) and the locally
 installed `gemini` CLI.
+
+**Repository**: https://github.com/0FL01/gemini-cli-mcp
 
 The core functionality is to spawn a `gemini` subprocess, execute a task in
 headless mode, parse the structured `stream-json` output, and return the results
@@ -29,8 +31,11 @@ to the MCP client.
 ## Project Structure
 
 ```
-experimental/gemini-mcp-server/
+gemini-cli-mcp/
 ├── Cargo.toml          # Manifest and dependencies
+├── AGENTS.md           # This file - context for AI agents
+├── README.md           # Project documentation
+├── opencode.jsonc      # OpenCode MCP configuration
 ├── src/
 │   ├── main.rs           # Entry point (tokio::main), initializes tracing and stdio transport
 │   ├── lib.rs            # Library exports
@@ -106,7 +111,6 @@ Defines `AppError` enum covering subprocess, parsing, and validation failures.
 ### Building
 
 ```bash
-cd experimental/gemini-mcp-server
 cargo build --release
 ```
 
@@ -139,15 +143,15 @@ The project uses a strict Clippy configuration in `Cargo.toml`:
   from the `gemini` CLI, providing per-turn events (init, message, tool_use,
   tool_result, error, result). This allows the server to extract the final
   assistant response and stats accurately.
-- **Why separate crate?**: This crate is Rust-based, while the main `gemini-cli`
-  project is a Node.js monorepo. Keeping it separate in `experimental/` avoids
-  build system complexity and Rust/JS interop issues at build time.
+- **Why standalone crate?**: This crate is Rust-based, while the main
+  `gemini-cli` project is a Node.js monorepo. Keeping it separate avoids
+  build system complexity and Rust/JS interop issues.
 
-## Interaction with Parent Project
+## Interaction with gemini-cli
 
-This crate depends on the parent `gemini-cli` project only at runtime (by
+This crate depends on the `gemini-cli` project only at runtime (by
 invoking the `gemini` binary). It does not link against any TypeScript/Node.js
-code from the parent project.
+code from gemini-cli.
 
-- Headless mode behavior is documented in `../docs/cli/headless.md`.
-- Stream JSON format is defined in `../packages/core/src/output/types.ts`.
+For gemini-cli installation and headless mode documentation, refer to:
+- https://github.com/agent-frameworks/gemini-cli

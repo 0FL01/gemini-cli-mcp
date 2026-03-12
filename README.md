@@ -57,11 +57,7 @@ Configure the server via environment variables:
 
 ### Building
 
-This crate is a standalone Rust project inside the `experimental/` directory of
-the gemini-cli repository. It is not part of the main npm workspace.
-
 ```bash
-cd experimental/gemini-mcp-server
 cargo build --release
 ```
 
@@ -95,9 +91,53 @@ input and output. To use it:
    interactively. However, you can pipe JSONL requests if you are implementing a
    custom client.
 
-   For simple validation that the server starts and the `gemini` binary is
-   accessible, you can run a health check if your client supports testing tools
-   individually. The `gemini_cli_health` tool is designed for this.
+    For simple validation that the server starts and the `gemini` binary is
+    accessible, you can run a health check if your client supports testing tools
+    individually. The `gemini_cli_health` tool is designed for this.
+
+### OpenCode Configuration
+
+For using with [OpenCode](https://opencode.ai), add this to your `opencode.jsonc`:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "gemini-mcp": {
+      "type": "local",
+      "command": [
+        "sh", "-c",
+        "GEMINI_BIN=gemini GEMINI_DEFAULT_TIMEOUT_SECS=600 GEMINI_MAX_TIMEOUT_SECS=1800 ./target/release/gemini-mcp-server"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+
+**Configuration options:**
+- `GEMINI_BIN`: Path to gemini binary (default: `gemini` from PATH)
+- `GEMINI_DEFAULT_TIMEOUT_SECS`: Default timeout in seconds (default: 600)
+- `GEMINI_MAX_TIMEOUT_SECS`: Maximum allowed timeout (default: 1800)
+- `GEMINI_ALLOWED_MODELS`: Comma-separated allowlist of model names
+- `GEMINI_ALLOWED_CWD_PREFIXES`: Path separator (`:` on Unix, `;` on Windows) separated list of allowed working directory prefixes
+
+**Windows example:**
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "gemini-mcp": {
+      "type": "local",
+      "command": [
+        "cmd", "/c",
+        "set GEMINI_BIN=gemini && set GEMINI_DEFAULT_TIMEOUT_SECS=600 && set GEMINI_MAX_TIMEOUT_SECS=1800 && .\\target\\release\\gemini-mcp-server.exe"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
 
 ## Available Tools
 
@@ -213,16 +253,14 @@ This crate uses `cargo` for dependency management and testing.
 
 ## Project Context
 
-This server is an experimental addition to the [gemini-cli](../) project. It
-provides a bridge between MCP clients and the powerful capabilities of the
-`gemini` CLI without requiring direct integration into the monorepo's
-Node.js/TypeScript build system.
+This server provides a bridge between MCP clients and the powerful capabilities of the
+`gemini` CLI without requiring direct integration into gemini-cli's Node.js/TypeScript
+build system.
 
 For more details on the `gemini` CLI's headless mode and `stream-json` format,
-refer to the parent project's documentation:
+refer to the gemini-cli project:
 
-- [Headless mode reference](../docs/cli/headless.md)
-- [Automation tutorial](../docs/cli/tutorials/automation.md)
+- https://github.com/agent-frameworks/gemini-cli
 
 ## License
 
