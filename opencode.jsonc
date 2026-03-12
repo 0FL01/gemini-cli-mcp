@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "gemini-mcp": {
+      "type": "local",
+      "command": [
+        "sh", "-c",
+        "GEMINI_BIN=gemini GEMINI_DEFAULT_TIMEOUT_SECS=600 GEMINI_MAX_TIMEOUT_SECS=1800 ./target/release/gemini-mcp-server"
+      ],
+      "enabled": true
+    }
+  }
+}

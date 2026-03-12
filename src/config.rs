@@ -51,30 +51,9 @@ impl AppConfig {
             ));
         }
 
-        let allowed_models = env::var("GEMINI_ALLOWED_MODELS").ok().and_then(|value| {
-            let models = value
-                .split(',')
-                .map(str::trim)
-                .filter(|item| !item.is_empty())
-                .map(ToOwned::to_owned)
-                .collect::<BTreeSet<_>>();
-            if models.is_empty() {
-                None
-            } else {
-                Some(models)
-            }
-        });
-
-        let allowed_cwd_prefixes = env::var_os("GEMINI_ALLOWED_CWD_PREFIXES")
-            .map(|value| env::split_paths(&value).collect::<Vec<_>>())
-            .filter(|paths| !paths.is_empty())
-            .map(|paths| {
-                paths
-                    .into_iter()
-                    .map(|path| canonicalize_existing_dir(&path))
-                    .collect::<Result<Vec<_>, _>>()
-            })
-            .transpose()?;
+        let allowed_models = parse_allowed_models(env::var("GEMINI_ALLOWED_MODELS").ok());
+        let allowed_cwd_prefixes =
+            parse_allowed_cwd_prefixes(env::var_os("GEMINI_ALLOWED_CWD_PREFIXES"))?;
 
         let working_dir = env::current_dir().map_err(|error| {
             AppError::InvalidConfiguration(format!(
@@ -169,6 +148,38 @@ impl AppConfig {
     }
 }
 
+fn parse_allowed_models(value: Option<String>) -> Option<BTreeSet<String>> {
+    value.and_then(|value| {
+        let models = value
+            .split(',')
+            .map(str::trim)
+            .filter(|item| !item.is_empty())
+            .map(ToOwned::to_owned)
+            .collect::<BTreeSet<_>>();
+        if models.is_empty() {
+            None
+        } else {
+            Some(models)
+        }
+    })
+}
+
+fn parse_allowed_cwd_prefixes(
+    value: Option<std::ffi::OsString>,
+) -> Result<Option<Vec<PathBuf>>, AppError> {
+    let prefixes = value
+        .filter(|value| !value.is_empty())
+        .map(|value| {
+            env::split_paths(&value)
+                .filter(|path| !path.as_os_str().is_empty())
+                .map(|path| canonicalize_existing_dir(&path))
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .transpose()?;
+
+    Ok(prefixes.filter(|paths| !paths.is_empty()))
+}
+
 fn parse_u64_env(name: &str, default_value: u64) -> Result<u64, AppError> {
     match env::var(name) {
         Ok(value) => value.parse::<u64>().map_err(|error| {
@@ -223,4 +234,40 @@ fn find_executable_in_dir(dir: &Path, command: &str) -> Option<PathBuf> {
 
 fn is_executable_candidate(path: &Path) -> bool {
     path.is_file() && !path.as_os_str().is_empty() && path.file_name() != Some(OsStr::new(""))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsString;
+
+    use tempfile::TempDir;
+
+    use super::{parse_allowed_cwd_prefixes, parse_allowed_models};
+
+    #[test]
+    fn empty_allowed_models_value_disables_allowlist() {
+        assert_eq!(parse_allowed_models(Some(String::new())), None);
+        assert_eq!(parse_allowed_models(Some(" , ".to_string())), None);
+    }
+
+    #[test]
+    fn empty_allowed_cwd_prefixes_value_disables_restrictions() {
+        assert_eq!(
+            parse_allowed_cwd_prefixes(Some(OsString::new())).unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn allowed_cwd_prefixes_canonicalize_valid_directories() {
+        let temp = TempDir::new().expect("temp dir should exist");
+        let prefixes = parse_allowed_cwd_prefixes(Some(OsString::from(temp.path())))
+            .expect("prefixes should parse")
+            .expect("prefix list should exist");
+
+        assert_eq!(
+            prefixes,
+            vec![temp.path().canonicalize().expect("path should resolve")]
+        );
+    }
 }
