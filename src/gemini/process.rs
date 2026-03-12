@@ -317,7 +317,7 @@ mod tests {
             temp.path(),
             "fake-gemini.sh",
             &format!(
-                "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then\n  printf 'gemini test\\n'\n  exit 0\nfi\nprintf '%s\\n' \"$@\" > '{}'\nprintf '{{\"type\":\"init\",\"timestamp\":\"2026-03-12T00:00:00Z\",\"session_id\":\"session-1\",\"model\":\"gemini-test\"}}\\n'\nprintf '{{\"type\":\"message\",\"timestamp\":\"2026-03-12T00:00:01Z\",\"role\":\"assistant\",\"content\":\"hello \",\"delta\":true}}\\n'\nprintf '{{\"type\":\"message\",\"timestamp\":\"2026-03-12T00:00:02Z\",\"role\":\"assistant\",\"content\":\"world\",\"delta\":true}}\\n'\nprintf '{{\"type\":\"result\",\"timestamp\":\"2026-03-12T00:00:03Z\",\"status\":\"success\",\"stats\":{{\"total_tokens\":3,\"input_tokens\":1,\"output_tokens\":2,\"cached\":0,\"input\":1,\"duration_ms\":10,\"tool_calls\":0,\"models\":{{}}}}}}\\n'\n",
+                "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then\n  printf 'gemini test\\n'\n  exit 0\nfi\nprintf '%s\\n' \"$@\" > '{}'\nprintf '{{\"type\":\"init\",\"timestamp\":\"2026-03-12T00:00:00Z\",\"session_id\":\"session-1\",\"model\":\"gemini-test\"}}\\n'\nprintf '{{\"type\":\"message\",\"timestamp\":\"2026-03-12T00:00:01Z\",\"role\":\"assistant\",\"content\":\"hello \",\"delta\":true}}\\n'\nprintf '{{\"type\":\"message\",\"timestamp\":\"2026-03-12T00:00:02Z\",\"role\":\"assistant\",\"content\":\"world\",\"delta\":true}}\\n'\nprintf '{{\"type\":\"result\",\"timestamp\":\"2026-03-12T00:00:03Z\",\"status\":\"success\",\"stats\":{{\"total_tokens\":3,\"input_tokens\":1,\"output_tokens\":2,\"cached\":0,\"input\":1,\"duration_ms\":10,\"tool_calls\":0}}}}\\n'\n",
                 args_path.display()
             ),
         );
@@ -339,6 +339,12 @@ mod tests {
         assert_eq!(result.response, "hello world");
         assert_eq!(result.session_id.as_deref(), Some("session-1"));
         assert_eq!(result.model.as_deref(), Some("gemini-test"));
+        assert!(result
+            .stats
+            .as_ref()
+            .expect("stats should be present")
+            .models
+            .is_empty());
         assert_eq!(result.events.as_ref().map(Vec::len), Some(4));
 
         let args = fs::read_to_string(args_path).expect("args should be captured");

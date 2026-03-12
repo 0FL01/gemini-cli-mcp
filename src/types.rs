@@ -55,6 +55,7 @@ pub struct StreamStats {
     pub input: u64,
     pub duration_ms: u64,
     pub tool_calls: u64,
+    #[serde(default)]
     pub models: BTreeMap<String, ModelStreamStats>,
 }
 
